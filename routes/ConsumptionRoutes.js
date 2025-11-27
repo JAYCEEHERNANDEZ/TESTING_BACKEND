@@ -1,11 +1,10 @@
 import express from "express";
 import {
-    getAllConsumptions,
-    getConsumption,
-    addConsumption,
-    updateConsumption,    // full update
-    updateStatus,         // status-only update
-    removeConsumption
+  getAllConsumptions,
+  getConsumption,
+  addConsumption,
+  updateConsumption, // full update
+  removeConsumption,
 } from "../controllers/ConsumptionController.js";
 
 const router = express.Router();
@@ -19,11 +18,8 @@ router.get("/:id", getConsumption);
 // POST new consumption
 router.post("/add", addConsumption);
 
-// PATCH full update (name, readings, billing month, status)
+// PATCH full update (name, readings, payments, notes)
 router.patch("/update/:id", updateConsumption);
-
-// PATCH status-only update
-router.patch("/status/:id", updateStatus);
 
 // DELETE consumption
 router.delete("/delete/:id", removeConsumption);

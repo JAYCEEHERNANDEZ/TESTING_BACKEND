@@ -6,6 +6,7 @@ import userRoutes from './routes/UserRoutes.js'
 import adminreaderRoutes from './routes/AdminReaderRoutes.js'
 import consumptionRoutes from './routes/ConsumptionRoutes.js';
 
+
 const app = express();
 dotenv.config();
 
