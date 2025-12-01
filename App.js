@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import userRoutes from './routes/UserRoutes.js'
 import adminreaderRoutes from './routes/AdminReaderRoutes.js'
 import consumptionRoutes from './routes/ConsumptionRoutes.js';
+import billingRoutes from './routes/billingRoutes.js';
+import monthlyIncomeRoutes from "./routes/monthlyIncomeRoutes.js";
+import paymentRoutes from './routes/paymentRoutes.js';
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 
 const app = express();
@@ -13,8 +17,6 @@ dotenv.config();
 let corsOptions = {
   origin: "http://localhost:5173", // your Vite frontend URL
 };
-
-app.use(cors(corsOptions));
 
 app.use(cors());
 app.use(express.json());
@@ -33,3 +35,11 @@ app.use('/user', userRoutes);
 app.use('/adminreader', adminreaderRoutes )
 
 app.use('/consumption', consumptionRoutes); 
+
+app.use('/billing', billingRoutes);
+
+app.use("/api/monthly-income", monthlyIncomeRoutes);
+
+app.use('/payment', paymentRoutes);
+
+app.use("/notifications", notificationRoutes);

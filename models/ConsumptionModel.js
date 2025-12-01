@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 
 /* ----------------------------------------------------
-   WATER CONSUMPTION MODEL (NO OVER_30_DAYS FIELD)
+   WATER CONSUMPTION MODEL (ONLY ONE PAYMENT FIELD)
 ---------------------------------------------------- */
 
 // GET all consumptions
@@ -39,17 +39,25 @@ export const createConsumption = async (data) => {
   const { user_id, name, current_reading } = data;
 
   if (!user_id || !name || current_reading === undefined) {
-    const error = new Error(
-      "Missing required fields: user_id, name, current_reading."
-    );
+    const error = new Error("Missing required fields.");
     error.statusCode = 400;
     throw error;
   }
 
-  const previous_reading = 0;
-  const cubic_used = current_reading;
+  // Get last reading
+  const [last] = await pool.query(
+    "SELECT present_reading FROM water_consumption WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+    [user_id]
+  );
 
-  // Basic billing logic
+  const previous_reading = last.length ? last[0].present_reading : 0;
+  const cubic_used = current_reading - previous_reading;
+
+  if (cubic_used < 0) {
+    throw new Error("Present reading cannot be lower than previous reading.");
+  }
+
+  // Billing logic
   let current_bill = 270;
   if (cubic_used > 5) current_bill += (cubic_used - 5) * 17;
 
@@ -58,8 +66,8 @@ export const createConsumption = async (data) => {
   const [result] = await pool.query(
     `INSERT INTO water_consumption
       (user_id, name, previous_reading, present_reading, cubic_used,
-       current_bill, total_bill, payment_1, payment_2, remaining_balance)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       current_bill, total_bill, payment_1, remaining_balance)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       user_id,
       name,
@@ -68,9 +76,8 @@ export const createConsumption = async (data) => {
       cubic_used,
       current_bill,
       total_bill,
-      0, // payment_1
-      0, // payment_2
-      total_bill // remaining balance
+      0,                 // payment_1 default
+      total_bill         // remaining_balance
     ]
   );
 
@@ -84,67 +91,46 @@ export const createConsumption = async (data) => {
 
 // UPDATE consumption
 export const updateConsumption = async (id, data) => {
-  const { present_reading, payment_1, payment_2 } = data;
+  const { present_reading, payment_1 } = data;
 
-  if (present_reading === undefined) {
-    const error = new Error("Field present_reading is required.");
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // Fetch existing record
   const old = await getConsumptionById(id);
 
-  const cubic_used = present_reading;
+  const cubic_used = present_reading - old.previous_reading;
+  if (cubic_used < 0) throw new Error("Present reading cannot be smaller.");
 
-  // Calculate bill
+  // Bill
   let current_bill = 270;
   if (cubic_used > 5) current_bill += (cubic_used - 5) * 17;
 
   const total_bill = current_bill;
 
-  const new_payment_1 = payment_1 !== undefined ? payment_1 : old.payment_1;
-  const new_payment_2 = payment_2 !== undefined ? payment_2 : old.payment_2;
+  const p1 = payment_1 ?? old.payment_1;
+  const remaining_balance = total_bill - p1;
 
-  // Calculate remaining balance
-  const remaining_balance = old.present_reading + total_bill - (new_payment_1 + new_payment_2);
-
-
-  // Update record
-  const [result] = await pool.query(
-    `UPDATE water_consumption
-     SET previous_reading = ?,
-         present_reading = ?,
-         cubic_used = ?, 
-         current_bill = ?, 
-         total_bill = ?, 
-         payment_1 = ?, 
-         payment_2 = ?, 
-         remaining_balance = ?
+  await pool.query(
+    `UPDATE water_consumption SET
+       present_reading = ?,
+       cubic_used = ?,
+       current_bill = ?,
+       total_bill = ?,
+       payment_1 = ?,
+       remaining_balance = ?
      WHERE id = ?`,
     [
-      old.present_reading,  // previous reading becomes the last total bill
-      total_bill,           // current reading = new total bill
+      present_reading,
       cubic_used,
       current_bill,
       total_bill,
-      new_payment_1,
-      new_payment_2,
+      p1,
       remaining_balance,
       id
     ]
   );
 
-  if (result.affectedRows === 0) {
-    const error = new Error("Consumption record not found.");
-    error.statusCode = 404;
-    throw error;
-  }
-
   return await getConsumptionById(id);
 };
 
-// DELETE consumption
+// DELETE
 export const deleteConsumption = async (id) => {
   const [result] = await pool.query(
     "DELETE FROM water_consumption WHERE id = ?",
@@ -158,4 +144,12 @@ export const deleteConsumption = async (id) => {
   }
 
   return true;
+};
+
+export const getConsumptionsByUser = async (user_id) => {
+  const [rows] = await pool.query(
+    "SELECT * FROM water_consumption WHERE user_id = ? ORDER BY created_at DESC",
+    [user_id]
+  );
+  return rows;
 };

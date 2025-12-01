@@ -73,38 +73,21 @@ export const login = async (username, password) => {
     return {
         success: true,
         token: token,
-        role: user[0].role,
         name: user[0].name,
         id: user[0].id
     };
 };
 
 export const getUser = async (id) => {
-    if (isNaN(parseInt(id))) {
-        throw new Error("Invalid id");
-    }
+    if (isNaN(parseInt(id))) throw new Error("Invalid id");
 
     const [rows] = await pool.query("SELECT * FROM users WHERE id = ?", [id]);
-
     if (rows.length === 0) throw new Error("User not found");
 
     return rows[0];
 };
 
 export const removeUser = async (id) => {
-    const [result] = await pool.query(
-        "DELETE FROM users WHERE id = ?",
-        [id]
-    );
+    const [result] = await pool.query("DELETE FROM users WHERE id = ?", [id]);
     return result.affectedRows;
 };
-
-// export const updateuser = async (username, password, id) => {
-//     const hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-
-//     const [result] = await pool.query(
-//         "UPDATE users SET username = ?, password = ? WHERE id = ?",
-//         [username, hashedPassword, id]
-//     );
-//     return result.affectedRows;
-// };

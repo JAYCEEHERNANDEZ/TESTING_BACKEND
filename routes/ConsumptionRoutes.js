@@ -5,6 +5,7 @@ import {
   addConsumption,
   updateConsumption, // full update
   removeConsumption,
+  getConsumptionsByUser,
 } from "../controllers/ConsumptionController.js";
 
 const router = express.Router();
@@ -23,5 +24,9 @@ router.patch("/update/:id", updateConsumption);
 
 // DELETE consumption
 router.delete("/delete/:id", removeConsumption);
+
+// consumptionRouter.js
+router.get("/user/:userId", getConsumptionsByUser);
+
 
 export default router;

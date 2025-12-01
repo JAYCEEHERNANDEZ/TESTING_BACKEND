@@ -63,3 +63,13 @@ export const removeConsumption = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getConsumptionsByUser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const rows = await consumptionModel.getConsumptionsByUser(userId);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    next(err);
+  }
+};
