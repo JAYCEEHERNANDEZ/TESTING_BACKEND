@@ -12,22 +12,29 @@ export const getPaymentsForUser = async (req, res) => {
   }
 };
 
-// Update a payment
+// Update a payment (supports payment_1 AND payment_2)
 export const makePayment = async (req, res) => {
   try {
     const { id } = req.params;
+    const { payment_1, payment_2 } = req.body;
 
-    // Ensure payment_1 is a number
-    const payment_1 = Number(req.body.payment_1);
-
-    if (isNaN(payment_1) || payment_1 < 0) {
-      return res.status(400).json({ success: false, message: "Invalid payment amount" });
+    if (payment_1 !== undefined) {
+      const num = Number(payment_1);
+      if (isNaN(num) || num < 0) {
+        return res.status(400).json({ success: false, message: "Invalid Payment 1 amount" });
+      }
     }
 
-    const data = await PaymentModel.updatePayment(id, { payment_1 });
+    const data = await PaymentModel.updatePayment(id, { payment_1, payment_2 });
+
     res.json({ success: true, data, message: "Payment updated successfully" });
   } catch (err) {
     console.error("❌ Payment update failed:", err);
+
+    if (err.message.includes("Payment")) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+
     res.status(500).json({ success: false, message: err.message });
   }
 };

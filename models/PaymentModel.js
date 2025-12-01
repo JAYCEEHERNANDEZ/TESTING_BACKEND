@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 
 /* ----------------------------------------------------
-   PAYMENT MODEL FOR RESIDENTS  — Payment 2 Removed
+   PAYMENT MODEL FOR RESIDENTS — Supports payment_1 + payment_2
 ---------------------------------------------------- */
 
 // Get all billing/payment records for a user
@@ -23,24 +23,45 @@ export const getPaymentById = async (id) => {
   return rows[0];
 };
 
-// Update payment for a billing record (ONLY payment_1)
-export const updatePayment = async (id, { payment_1 }) => {
+// Update payment (supports both payment_1 and payment_2)
+export const updatePayment = async (id, { payment_1, payment_2 }) => {
   const old = await getPaymentById(id);
 
-  const oldPayment1 = Number(old.payment_1 || 0);
-  const totalBill = Number(old.total_bill || 0);
+  const totalBill = Number(old.total_bill);
+  let newP1 = Number(old.payment_1) || 0;
+  let newP2 = Number(old.payment_2) || 0;
 
-  // New payment (fallback to old if empty)
-  const newPayment1 = Number(payment_1 ?? oldPayment1);
+  const remainingBeforeP1 = totalBill - (newP1 + newP2);
 
-  // Recalculate remaining balance
-  const remaining_balance = totalBill - newPayment1;
+  // Handle Payment 1
+  if (payment_1 !== undefined) {
+    const p1 = Number(payment_1);
+    if (isNaN(p1) || p1 < 0 || p1 > remainingBeforeP1) {
+      throw new Error(`Invalid Payment 1 amount. Must be between 0 and ₱${remainingBeforeP1}`);
+    }
+    newP1 += p1;
+  }
 
-  // Update only payment_1 + remaining_balance
+  const remainingAfterP1 = totalBill - (newP1 + newP2);
+
+  // Handle Payment 2 (must be exact remaining, but only after Payment 1)
+  if (payment_2 !== undefined) {
+    if (newP1 === 0) {
+      throw new Error("Payment 2 cannot be made before Payment 1 is completed");
+    }
+    const p2 = Number(payment_2);
+    if (isNaN(p2) || p2 <= 0 || p2 !== remainingAfterP1) {
+      throw new Error(`Payment 2 must be the exact remaining balance: ₱${remainingAfterP1}`);
+    }
+    newP2 += p2;
+  }
+
+  // Update database (only payments and remaining balance)
   await pool.query(
-    "UPDATE water_consumption SET payment_1 = ?, remaining_balance = ? WHERE id = ?",
-    [newPayment1, remaining_balance, id]
+    "UPDATE water_consumption SET payment_1 = ?, payment_2 = ?, remaining_balance = ? WHERE id = ?",
+    [newP1, newP2, totalBill - (newP1 + newP2), id]
   );
 
   return await getPaymentById(id);
 };
+  

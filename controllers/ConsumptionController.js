@@ -1,6 +1,6 @@
 import * as consumptionModel from "../models/ConsumptionModel.js";
 
-// GET all
+// GET all consumptions
 export const getAllConsumptions = async (req, res, next) => {
   try {
     const rows = await consumptionModel.getAllConsumptions();
@@ -10,7 +10,7 @@ export const getAllConsumptions = async (req, res, next) => {
   }
 };
 
-// GET by ID
+// GET consumption by ID
 export const getConsumption = async (req, res, next) => {
   try {
     const data = await consumptionModel.getConsumptionById(req.params.id);
@@ -20,50 +20,45 @@ export const getConsumption = async (req, res, next) => {
   }
 };
 
-// CREATE
+// CREATE new consumption
 export const addConsumption = async (req, res, next) => {
   try {
     const data = await consumptionModel.createConsumption(req.body);
-    res.status(201).json({
-      success: true,
-      data,
-      message: "Consumption added successfully",
+    res.status(201).json({ 
+      success: true, 
+      data, 
+      message: "Consumption added successfully" 
     });
   } catch (err) {
     next(err);
   }
 };
 
-// FULL UPDATE
+// UPDATE consumption
 export const updateConsumption = async (req, res, next) => {
   try {
-    const data = await consumptionModel.updateConsumption(
-      req.params.id,
-      req.body
-    );
-    res.json({
-      success: true,
-      data,
-      message: "Consumption updated successfully",
+    const data = await consumptionModel.updateConsumption(req.params.id, req.body);
+    res.json({ 
+      success: true, 
+      data, 
+      message: "Consumption updated successfully" 
     });
   } catch (err) {
     next(err);
   }
 };
 
-// DELETE
+// DELETE consumption
 export const removeConsumption = async (req, res, next) => {
   try {
     await consumptionModel.deleteConsumption(req.params.id);
-    res.json({
-      success: true,
-      message: "Consumption record deleted successfully",
-    });
+    res.json({ success: true, message: "Consumption record deleted successfully" });
   } catch (err) {
     next(err);
   }
 };
 
+// GET consumptions by user
 export const getConsumptionsByUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
