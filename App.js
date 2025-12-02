@@ -10,6 +10,7 @@ import monthlyIncomeRoutes from "./routes/monthlyIncomeRoutes.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
 import kpiRoutes from "./routes/kpiRoutes.js";
+import incomeRoutes from "./routes/incomeRoutes.js";
 
 
 const app = express();
@@ -39,10 +40,12 @@ app.use('/consumption', consumptionRoutes);
 
 app.use('/billing', billingRoutes);
 
-app.use("/api/monthly-income", monthlyIncomeRoutes);
+app.use("/monthly-income", monthlyIncomeRoutes);
 
 app.use('/payment', paymentRoutes);
 
 app.use("/notifications", notificationRoutes);
 
 app.use("/api/kpi", kpiRoutes);
+
+app.use("/api/admin", incomeRoutes);

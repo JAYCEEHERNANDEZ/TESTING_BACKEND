@@ -1,14 +1,14 @@
 import pool from "../config/db.js";
 
 /* ----------------------------------------------------
-   CONSUMPTION MODEL (BILLING + 2 PAYMENT LOGIC)
+   CONSUMPTION MODEL (BILLING + 2 PAYMENT LOGIC + DUE DATE)
 ---------------------------------------------------- */
 
 // Helper: calculate bill based on cubic used
 const calculateBill = (cubicUsed) => {
   if (cubicUsed <= 5) return 270;
   const extra = cubicUsed - 5;
-  const ratePerExtra = 17; // 17 pesos per extra cubic
+  const ratePerExtra = 17;
   return 270 + extra * ratePerExtra;
 };
 
@@ -29,6 +29,7 @@ export const getConsumptionById = async (id) => {
 // CREATE new consumption
 export const createConsumption = async (data) => {
   const { user_id, name, cubic_used } = data;
+
   if (!user_id || !name || cubic_used === undefined) {
     const error = new Error("Missing required fields.");
     error.statusCode = 400;
@@ -44,32 +45,37 @@ export const createConsumption = async (data) => {
   const previous_reading = last.length ? last[0].current_bill : 0;
   const cubic_used_last_month = last.length ? last[0].cubic_used : 0;
 
-  // Calculate current bill based on cubic used
+  // Calculate current bill
   const current_bill = calculateBill(cubic_used);
   const total_bill = current_bill;
 
-  // First day of current month (DATE)
+  // Billing month (start of month)
   const today = new Date();
-  const billing_month = new Date(today.getFullYear(), today.getMonth(), 1);
+  const billing_date = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  // DUE DATE = 30 DAYS AFTER TODAY
+  const due_date = new Date(today);
+  due_date.setDate(due_date.getDate() + 30);
 
   const [result] = await pool.query(
     `INSERT INTO water_consumption
       (user_id, name, previous_reading, present_reading, cubic_used, cubic_used_last_month,
-       current_bill, total_bill, payment_1, payment_2, remaining_balance, billing_month)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       current_bill, total_bill, payment_1, payment_2, remaining_balance, billing_date, due_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       user_id,
       name,
       previous_reading,
-      total_bill,               // present reading = this month’s total bill
+      total_bill,        
       cubic_used,
       cubic_used_last_month,
       current_bill,
       total_bill,
-      0,                        // payment_1 default
-      0,                        // payment_2 default
-      total_bill,               // remaining_balance
-      billing_month
+      0,
+      0,
+      total_bill,
+      billing_date,
+      due_date
     ]
   );
 
@@ -81,19 +87,18 @@ export const createConsumption = async (data) => {
   return newRow[0];
 };
 
-// UPDATE consumption (with payment_1 and payment_2)
+// UPDATE consumption
 export const updateConsumption = async (id, data) => {
   const { cubic_used, payment_1, payment_2 } = data;
   const old = await getConsumptionById(id);
 
-  // Billing calculation: 1-5 m³ = 270, +17 per extra cubic above 5
   const calculateBill = (cubic) => {
     if (cubic <= 5) return 270;
     return 270 + (cubic - 5) * 17;
   };
 
   const newCubicUsed = cubic_used ?? old.cubic_used;
-  const current_bill = calculateBill(newCubicUsed); // current month bill
+  const current_bill = calculateBill(newCubicUsed);
   const total_bill = current_bill;
 
   // Handle payments
@@ -111,8 +116,13 @@ export const updateConsumption = async (id, data) => {
     remaining = 0;
   }
 
+  // Billing month reset
   const today = new Date();
-  const billing_month = new Date(today.getFullYear(), today.getMonth(), 1);
+  const billing_date = new Date();
+
+  // Refresh due date: 30 days after today
+  const due_date = new Date(today);
+  due_date.setDate(due_date.getDate() + 30);
 
   await pool.query(
     `UPDATE water_consumption SET
@@ -125,33 +135,31 @@ export const updateConsumption = async (id, data) => {
        payment_1 = ?,
        payment_2 = ?,
        remaining_balance = ?,
-       billing_month = ?
+       billing_date = ?,
+       due_date = ?
      WHERE id = ?`,
     [
-      old.current_bill,   // previous_reading = last month's current_bill
-      current_bill,       // present_reading = this month's bill
-      old.cubic_used,     // cubic_used_last_month = old cubic_used
-      newCubicUsed,       // new cubic_used
-      current_bill,       // current_bill = this month's bill
+      old.current_bill,
+      current_bill,
+      old.cubic_used,
+      newCubicUsed,
+      current_bill,
       total_bill,
       newPayment1,
       newPayment2,
       remaining,
-      billing_month,
+      billing_date,
+      due_date,
       id
     ]
-  );  
+  );
 
   return await getConsumptionById(id);
 };
 
-
 // DELETE consumption
 export const deleteConsumption = async (id) => {
-  const [result] = await pool.query(
-    "DELETE FROM water_consumption WHERE id = ?",
-    [id]
-  );
+  const [result] = await pool.query("DELETE FROM water_consumption WHERE id = ?", [id]);
   if (result.affectedRows === 0) throw new Error("Record not found.");
   return true;
 };
@@ -164,5 +172,3 @@ export const getConsumptionsByUser = async (user_id) => {
   );
   return rows;
 };
-
-

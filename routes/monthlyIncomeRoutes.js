@@ -3,7 +3,7 @@ import * as MonthlyIncomeController from "../controllers/MonthlyIncomeController
 
 const router = express.Router();
 
-// GET all monthly incomes (computed from water_consumption)
+// GET monthly incomes (optionally filtered by ?year=2025&month=12)
 router.get("/all", MonthlyIncomeController.fetchMonthlyIncome);
 
 export default router;

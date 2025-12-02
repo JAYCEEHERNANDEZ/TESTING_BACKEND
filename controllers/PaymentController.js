@@ -38,3 +38,18 @@ export const makePayment = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+export const notifyBillsNearDue = async () => {
+  const bills = await getBillsNearDue(3); // 3 days before due date
+
+  for (const bill of bills) {
+    await pool.query(
+      `INSERT INTO notifications (user_id, message, created_at) VALUES (?, ?, ?)`,
+      [
+        bill.user_id,
+        `⚠️ Your bill of ₱${bill.total_bill} is due on ${bill.due_date.toISOString().split("T")[0]}. Please pay on time!`,
+        new Date(),
+      ]
+    );
+  }
+};
