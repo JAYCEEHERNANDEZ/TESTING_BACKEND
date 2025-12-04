@@ -41,6 +41,25 @@ export const createUser = async (username, password, name) => {
     return newUser;
 };
 
+// Deactivate user (soft delete)
+export const deactivateUser = async (id) => {
+    const [result] = await pool.query(
+        "UPDATE users SET is_active = 0 WHERE id = ?",
+        [id]
+    );
+    return result.affectedRows;
+};
+
+// Reactivate user (optional)
+export const reactivateUser = async (id) => {
+    const [result] = await pool.query(
+        "UPDATE users SET is_active = 1 WHERE id = ?",
+        [id]
+    );
+    return result.affectedRows;
+};
+
+// Update login to check if account is active
 export const login = async (username, password) => {
     if (username.trim() === '' || password.trim() === '') {
         const error = new Error('username and password is required');
@@ -58,6 +77,12 @@ export const login = async (username, password) => {
         throw error;
     }
 
+    if (user[0].is_active === 0) {
+        const error = new Error('This account has been deactivated.');
+        error.statusCode = 403;
+        throw error;
+    }
+
     if (!bcrypt.compareSync(password, user[0].password)) {
         const error = new Error('Incorrect password.');
         error.statusCode = 400;
@@ -72,11 +97,12 @@ export const login = async (username, password) => {
 
     return {
         success: true,
-        token: token,
+        token,
         name: user[0].name,
         id: user[0].id
     };
 };
+
 
 export const getUser = async (id) => {
     if (isNaN(parseInt(id))) throw new Error("Invalid id");
@@ -87,7 +113,20 @@ export const getUser = async (id) => {
     return rows[0];
 };
 
-export const removeUser = async (id) => {
-    const [result] = await pool.query("DELETE FROM users WHERE id = ?", [id]);
-    return result.affectedRows;
+export const updateUserPassword = async (userId, hashedPassword) => {
+  try {
+    const [result] = await pool.query(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, userId]
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
+
+
+// export const removeUser = async (id) => {
+//     const [result] = await pool.query("DELETE FROM users WHERE id = ?", [id]);
+//     return result.affectedRows;
+// };

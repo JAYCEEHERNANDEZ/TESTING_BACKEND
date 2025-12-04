@@ -1,4 +1,6 @@
 import * as userModel from "../models/Users.js";
+import { updateUserPassword } from "../models/Users.js";
+import bcrypt from 'bcryptjs';
 
 
 export const fetchuser = async (req, res) => {
@@ -42,17 +44,62 @@ export const userLogin = async (req, res) => {
     }
 }
 
-
-export const removeUser= async (req, res) => {
-    const {id} = req.params;
+// Deactivate account
+export const deactivateAccount = async (req, res) => {
+    const { id } = req.params;
     try {
-        const deletedId = await userModel.removeUser(id);
-        res.status(200).json({success: true, message: deletedId});
+        const affectedRows = await userModel.deactivateUser(id);
+        if (affectedRows === 0) throw new Error("User not found or already deactivated");
+        res.status(200).json({ success: true, message: `User ${id} deactivated` });
     } catch (e) {
-        console.log(e);
-        res.status(500).json({success: false, message: "Internal Server Error"})
+        console.error(e);
+        res.status(500).json({ success: false, message: e.message });
     }
-}
+};
+
+// Reactivate account (optional)
+export const reactivateAccount = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const affectedRows = await userModel.reactivateUser(id);
+        if (affectedRows === 0) throw new Error("User not found or already active");
+        res.status(200).json({ success: true, message: `User ${id} reactivated` });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ success: false, message: e.message });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+  const userId = req.params.id;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ message: "Password cannot be empty" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await updateUserPassword(userId, hashedPassword);
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update password", error: err });
+  }
+};
+
+
+// export const removeUser= async (req, res) => {
+//     const {id} = req.params;
+//     try {
+//         const deletedId = await userModel.removeUser(id);
+//         res.status(200).json({success: true, message: deletedId});
+//     } catch (e) {
+//         console.log(e);
+//         res.status(500).json({success: false, message: "Internal Server Error"})
+//     }
+// }
 
 // export const updateuser = async (req, res) => {
 //     const {username, password} = req.body;

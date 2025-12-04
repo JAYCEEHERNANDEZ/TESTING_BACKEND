@@ -3,30 +3,29 @@ import {
   getAllConsumptions,
   getConsumption,
   addConsumption,
-  updateConsumption, // full update
+  updateConsumption,
   removeConsumption,
   getConsumptionsByUser,
 } from "../controllers/ConsumptionController.js";
 
 const router = express.Router();
 
-// GET all consumptions
+// Get latest consumption per user (dashboard)
 router.get("/all", getAllConsumptions);
 
-// GET consumption by ID
+// Get a specific consumption by ID
 router.get("/:id", getConsumption);
 
-// POST new consumption
+// Add new consumption record (new month)
 router.post("/add", addConsumption);
 
-// PATCH full update (name, readings, payments, notes)
+// Update existing consumption (payments/cubic_used adjustments)
 router.patch("/update/:id", updateConsumption);
 
-// DELETE consumption
+// Delete a consumption record
 router.delete("/delete/:id", removeConsumption);
 
-// consumptionRouter.js
-router.get("/user/:userId", getConsumptionsByUser);
-
+// Get all consumptions for a specific user
+router.get("/user/:userId", getConsumptionsByUser); 
 
 export default router;

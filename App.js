@@ -9,8 +9,11 @@ import billingRoutes from './routes/billingRoutes.js';
 import monthlyIncomeRoutes from "./routes/monthlyIncomeRoutes.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
-import kpiRoutes from "./routes/kpiRoutes.js";
-import incomeRoutes from "./routes/incomeRoutes.js";
+
+
+import DeactNoticeRoutes from "./routes/DeactNoticeRoutes.js";
+
+
 
 
 const app = express();
@@ -46,6 +49,7 @@ app.use('/payment', paymentRoutes);
 
 app.use("/notifications", notificationRoutes);
 
-app.use("/api/kpi", kpiRoutes);
 
-app.use("/api/admin", incomeRoutes);
+
+app.use("/deact-notice", DeactNoticeRoutes);
+
