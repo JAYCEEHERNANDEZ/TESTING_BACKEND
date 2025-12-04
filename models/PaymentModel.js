@@ -174,3 +174,44 @@ export const markPaymentStatus = async (id, status) => {
 
   return await getPaymentById(id);
 };
+
+// Update proof URL only
+export const submitPaymentProof = async ({ user_id, bill_id, proof_url }) => {
+  const now = formatDate(new Date());
+
+  await pool.query(
+    `UPDATE water_consumption 
+     SET proof_url = ?, 
+         payment_1_date = IFNULL(payment_1_date, ?), 
+         payment_2_date = IFNULL(payment_2_date, ?) 
+     WHERE id = ? AND user_id = ?`,
+    [proof_url, now, now, bill_id, user_id]
+  );
+
+  return await getPaymentById(bill_id);
+};
+
+// Get payment proofs for a specific user (with user details)
+export const getUserPaymentProofs = async (user_id) => {
+  const [rows] = await pool.query(
+    `SELECT wc.*, u.name as user_name 
+     FROM water_consumption wc
+     JOIN users u ON wc.user_id = u.id
+     WHERE wc.user_id = ? AND wc.proof_url IS NOT NULL
+     ORDER BY wc.billing_date DESC`,
+    [user_id]
+  );
+  return rows;
+};
+
+// Get all payment proofs (admin view)
+export const getAllPaymentProofs = async () => {
+  const [rows] = await pool.query(
+    `SELECT wc.*, u.name as user_name 
+     FROM water_consumption wc
+     JOIN users u ON wc.user_id = u.id
+     WHERE wc.proof_url IS NOT NULL
+     ORDER BY wc.billing_date DESC`
+  );
+  return rows;
+};

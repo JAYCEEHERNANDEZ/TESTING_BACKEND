@@ -2,7 +2,10 @@ import express from "express";
 import {
   sendNotification,
   fetchNotifications,
-  readNotification
+  readNotification,
+  sendNotificationPerUser,
+  fetchUserNotificationsPerUser,
+  readNotificationPerUser
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -19,5 +22,15 @@ router.post("/send", sendNotification);
 
 // Mark notification as read
 router.put("/read/:id", readNotification);
+
+
+// Send notification (admin)
+router.post("/send", sendNotificationPerUser);
+
+// Get notifications for a specific user
+router.get("/user/:user_id", fetchUserNotificationsPerUser);
+
+// Mark notification as read
+router.put("/read/:id", readNotificationPerUser);
 
 export default router;

@@ -52,3 +52,30 @@ export const markAsRead = async (id) => {
   );
   return true;
 };
+
+export const createNotificationPerUser = async ({ user_id, title, message }) => {
+  const query = `
+    INSERT INTO notifications (user_id, title, message, is_read, created_at)
+    VALUES (?, ?, ?, 0, NOW())
+  `;
+  const [result] = await db.execute(query, [user_id, title, message]);
+  return result;
+};
+
+// Fetch notifications for a specific user
+export const getUserNotificationsPerUser = async (user_id) => {
+  const query = `
+    SELECT * FROM notifications
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+  `;
+  const [rows] = await db.execute(query, [user_id]);
+  return rows;
+};
+
+// Mark a notification as read
+export const markAsReadPerUser = async (id) => {
+  const query = `UPDATE notifications SET is_read = 1 WHERE id = ?`;
+  const [result] = await db.execute(query, [id]);
+  return result;
+};

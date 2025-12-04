@@ -94,7 +94,7 @@ export const createConsumption = async (data) => {
     "SELECT id FROM water_consumption WHERE user_id = ? ORDER BY billing_date ASC",
     [user_id]
   );
-  if (userRecords.length > 6) {
+  if (userRecords.length > 12) {
     const oldestId = userRecords[0].id;
     await pool.query("DELETE FROM water_consumption WHERE id = ?", [oldestId]);
   }

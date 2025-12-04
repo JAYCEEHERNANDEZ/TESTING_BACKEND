@@ -92,3 +92,56 @@ export const submitUserReference = async (req, res) => {
     res.status(400).json({ success: false, message: err.message });
   }
 };
+
+// USER: Upload payment proof
+export const uploadPaymentProof = async (req, res) => {
+  try {
+    const { user_id, bill_id } = req.body;
+    
+    if (!user_id || !bill_id) {
+      return res.status(400).json({ success: false, message: "user_id and bill_id are required" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    // Generate proof URL - accessible via static file serving
+    const proof_url = `/uploads/payments/${req.file.filename}`;
+
+    const updated = await PaymentModel.submitPaymentProof({
+      user_id,
+      bill_id,
+      proof_url,
+    });
+
+    res.json({
+      success: true,
+      data: updated,
+      message: "Payment proof uploaded successfully",
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// USER: Get payment proofs for a specific user
+export const getUserPaymentProofs = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const proofs = await PaymentModel.getUserPaymentProofs(userId);
+    res.json({ success: true, data: proofs });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// ADMIN: Get all payment proofs
+export const getAllPaymentProofs = async (req, res) => {
+  try {
+    const proofs = await PaymentModel.getAllPaymentProofs();
+    res.json({ success: true, data: proofs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

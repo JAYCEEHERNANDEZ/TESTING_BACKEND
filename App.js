@@ -53,3 +53,8 @@ app.use("/notifications", notificationRoutes);
 
 app.use("/deact-notice", DeactNoticeRoutes);
 
+app.use("/uploads", express.static("uploads"));
+
+
+
+

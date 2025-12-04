@@ -6,6 +6,7 @@
     userRoutes.get('/all', user.fetchuser);
     userRoutes.post('/register', user.Register);
     userRoutes.post('/login', user.userLogin);
+    userRoutes.get("/:id", user.getUserById);
     // userRoutes.delete('/delete/:id', user.removeUser);
 
         // Deactivate account instead of delete
