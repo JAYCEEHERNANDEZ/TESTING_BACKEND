@@ -5,7 +5,9 @@ import {
   readNotification,
   sendNotificationPerUser,
   fetchUserNotificationsPerUser,
-  readNotificationPerUser
+  readNotificationPerUser,
+  getAllAdminNotifications,
+  markAdminNotificationAsRead,
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -33,4 +35,9 @@ router.get("/user/:user_id", fetchUserNotificationsPerUser);
 // Mark notification as read
 router.put("/read/:id", readNotificationPerUser);
 
+// Fetch all admin notifications
+router.get("/admin/all", getAllAdminNotifications);
+
+// Mark a notification as read
+router.put("/admin/read/:id", markAdminNotificationAsRead);
 export default router;

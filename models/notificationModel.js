@@ -80,17 +80,40 @@ export const markAsReadPerUser = async (id) => {
   return result;
 };
 
-// // Notify all admins only
-// export const createAdminNotification = async ({ title, message }) => {
-//   const [admins] = await pool.query(`SELECT id FROM admin_reader WHERE role = 'admin'`);
-  
-//   const promises = admins.map((admin) =>
-//     pool.query(
-//       `INSERT INTO notifications (user_id, title, message, is_read, created_at) 
-//        VALUES (?, ?, ?, 0, NOW())`,
-//       [admin.id, title, message]
-//     )
-//   );
+export const createAdminNotification = async ({ title, message, user_id }) => {
+  try {
+    const [admins] = await pool.query(
+      `SELECT id FROM admin_reader WHERE role = 'admin'`
+    );
 
-//   await Promise.all(promises);
-// };
+    if (!admins.length) return;
+
+    const promises = admins.map((admin) =>
+      pool.query(
+        `INSERT INTO admin_notifications (admin_id, user_id, title, message, is_read, created_at)
+         VALUES (?, ?, ?, ?, 0, NOW())`,
+        [admin.id, user_id || null, title, message]
+      )
+    );
+
+    await Promise.all(promises);
+  } catch (err) {
+    console.error("Error creating admin notification:", err);
+  }
+};
+
+
+export const fetchAllAdminNotifications = async () => {
+  const [rows] = await pool.query(
+    `SELECT * FROM admin_notifications ORDER BY created_at DESC`
+  );
+  return rows;
+};
+
+// Mark a notification as read
+export const markNotificationAsRead = async (notifId) => {
+  await pool.query(
+    `UPDATE admin_notifications SET is_read = 1 WHERE id = ?`,
+    [notifId]
+  );
+};

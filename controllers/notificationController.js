@@ -1,7 +1,9 @@
 import {
   createNotification,
   getUserNotifications,
-  markAsRead
+  markAsRead,
+  fetchAllAdminNotifications,
+  markNotificationAsRead,
 } from "../models/notificationModel.js";
 
 // Admin sends a notification
@@ -76,3 +78,29 @@ export const readNotificationPerUser = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+
+
+// Fetch all admin notifications
+export const getAllAdminNotifications = async (req, res) => {
+  try {
+    const rows = await fetchAllAdminNotifications(); // from your model
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("Error fetching admin notifications:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Mark admin notification as read
+export const markAdminNotificationAsRead = async (req, res) => {
+  try {
+    const notifId = req.params.id;
+    await markNotificationAsRead(notifId); // from your model
+    res.json({ success: true, message: "Notification marked as read" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
