@@ -109,17 +109,19 @@ export const applyPaymentWithReference = async (user_id, amount, reference_code)
   return await getUserPayments(user_id);
 };
 
-// Submit reference code only
-export const submitReferenceCode = async ({ user_id, bill_id, reference_code }) => {
-  const now = formatDate(new Date());
-
-  await pool.query(
-    `UPDATE water_consumption SET reference_code = ?, payment_1_date = IFNULL(payment_1_date, ?), payment_2_date = IFNULL(payment_2_date, ?) 
-     WHERE id = ? AND user_id = ?`,
-    [reference_code, now, now, bill_id, user_id]
+export const saveReferenceCode = async (user_id, reference_code) => {
+  const [result] = await pool.query(
+    `UPDATE water_consumption 
+     SET reference_code = ? 
+     WHERE user_id = ?`,
+    [reference_code, user_id]
   );
 
-  return await getPaymentById(bill_id);
+  if (result.affectedRows === 0) {
+    throw new Error("No record found for this user");
+  }
+
+  return { user_id, reference_code };
 };
 
 // Get unpaid/partial payments

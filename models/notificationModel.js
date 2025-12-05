@@ -79,3 +79,18 @@ export const markAsReadPerUser = async (id) => {
   const [result] = await db.execute(query, [id]);
   return result;
 };
+
+// // Notify all admins only
+// export const createAdminNotification = async ({ title, message }) => {
+//   const [admins] = await pool.query(`SELECT id FROM admin_reader WHERE role = 'admin'`);
+  
+//   const promises = admins.map((admin) =>
+//     pool.query(
+//       `INSERT INTO notifications (user_id, title, message, is_read, created_at) 
+//        VALUES (?, ?, ?, 0, NOW())`,
+//       [admin.id, title, message]
+//     )
+//   );
+
+//   await Promise.all(promises);
+// };

@@ -6,7 +6,7 @@ import {
   adminMarkPayment,
   getAllUsers,
   getUserPendingPayments,
-  submitUserReference,
+  submitReferenceCode,
   uploadPaymentProof,
   getUserPaymentProofs,
   getAllPaymentProofs
@@ -23,7 +23,7 @@ router.get("/user/:userId", getPaymentsForUser);
 router.patch("/pay/:id", makePayment);
 
 // Submit reference code only
-router.post("/submit-reference", submitUserReference);
+router.post("/submit-reference", submitReferenceCode);
 
 // Upload payment proof image
 router.post("/upload-proof", upload.single("proof"), uploadPaymentProof);
@@ -46,5 +46,8 @@ router.patch("/admin/pay/:id", adminMarkPayment);
 
 // Get all payment proofs from all users
 router.get("/proofs/all", getAllPaymentProofs);
+
+
+
 
 export default router;

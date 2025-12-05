@@ -1,50 +1,72 @@
 import pool from "../config/db.js";
 
 /* ----------------------------------------------------
-   CONSUMPTION MODEL (BILLING + 2 PAYMENT LOGIC + DUE DATE)
+   CONSUMPTION MODEL (BILLING + 2 PAYMENT LOGIC + DUE DATE + ARCHIVE OLD)
 ---------------------------------------------------- */
 
 // Helper: calculate bill based on cubic used
 const calculateBill = (cubicUsed) => {
   if (cubicUsed <= 5) return 270;
-  const extra = cubicUsed - 5;
-  const ratePerExtra = 17;
-  return 270 + extra * ratePerExtra;
+  return 270 + (cubicUsed - 5) * 17;
 };
 
-// GET all consumptions (latest per user)
-export const getAllConsumptions = async () => {
-  const [rows] = await pool.query(`
-    SELECT w1.*
-    FROM water_consumption w1
-    INNER JOIN (
-      SELECT user_id, MAX(billing_date) AS latest_billing
-      FROM water_consumption
-      GROUP BY user_id
-    ) w2 ON w1.user_id = w2.user_id AND w1.billing_date = w2.latest_billing
-    ORDER BY w1.user_id
-  `);
-  return rows;
-};
-
-// GET consumption by ID
-export const getConsumptionById = async (id) => {
-  if (isNaN(id)) throw new Error("Invalid ID.");
-  const [rows] = await pool.query(
-    "SELECT * FROM water_consumption WHERE id = ?",
-    [id]
+/* -------------------------------
+   ARCHIVE OLD RECORDS (OLDER THAN 5 YEARS)
+--------------------------------*/
+export const archiveOldConsumptions = async () => {
+  // Move old records to archive WITHOUT copying the ID
+  await pool.query(
+    `INSERT INTO water_consumption_archive 
+     (user_id, name, previous_reading, present_reading, cubic_used, cubic_used_last_month,
+      current_bill, total_bill, payment_1, payment_2, remaining_balance, billing_date, due_date, archived_at)
+     SELECT user_id, name, previous_reading, present_reading, cubic_used, cubic_used_last_month,
+            current_bill, total_bill, payment_1, payment_2, remaining_balance, billing_date, due_date, NOW()
+     FROM water_consumption
+     WHERE billing_date < DATE_SUB(CURDATE(), INTERVAL 5 YEAR)`
   );
-  if (rows.length === 0) throw new Error("Consumption record not found.");
-  return rows[0];
+
+  // Delete old records from main table
+  const [result] = await pool.query(
+    "DELETE FROM water_consumption WHERE billing_date < DATE_SUB(CURDATE(), INTERVAL 5 YEAR)"
+  );
+
+  // Reset AUTO_INCREMENT so new inserts don’t conflict
+  await pool.query(
+    "ALTER TABLE water_consumption AUTO_INCREMENT = 1"
+  );
+
+  return result.affectedRows;
 };
 
-// CREATE new consumption
-// CREATE new consumption
+
+/* -------------------------------
+   CREATE NEW CONSUMPTION
+--------------------------------*/
 export const createConsumption = async (data) => {
   const { user_id, name, cubic_used } = data;
 
   if (!user_id || !name || cubic_used === undefined) {
     const error = new Error("Missing required fields.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Automatically archive old records
+  await archiveOldConsumptions();
+
+  const today = new Date();
+
+  // Check if user already has a record for this month
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  const [existing] = await pool.query(
+    "SELECT * FROM water_consumption WHERE user_id = ? AND billing_date BETWEEN ? AND ?",
+    [user_id, monthStart, monthEnd]
+  );
+
+  if (existing.length > 0) {
+    const error = new Error("Consumption for this month has already been recorded.");
     error.statusCode = 400;
     throw error;
   }
@@ -61,8 +83,7 @@ export const createConsumption = async (data) => {
   const current_bill = calculateBill(cubic_used);
   const total_bill = current_bill;
 
-  const today = new Date();
-  const billing_date = new Date(today.getFullYear(), today.getMonth(), 1); // start of month
+  const billing_date = today; // <-- use exact current date
   const due_date = new Date(today);
   due_date.setDate(due_date.getDate() + 30);
 
@@ -75,8 +96,8 @@ export const createConsumption = async (data) => {
     [
       user_id,
       name,
-      previous_reading, // previous reading comes from last present_reading
-      current_bill, // present_reading temporarily = current bill
+      previous_reading,
+      current_bill,
       cubic_used,
       cubic_used_last_month,
       current_bill,
@@ -89,16 +110,6 @@ export const createConsumption = async (data) => {
     ]
   );
 
-  // Keep only last 6 records
-  const [userRecords] = await pool.query(
-    "SELECT id FROM water_consumption WHERE user_id = ? ORDER BY billing_date ASC",
-    [user_id]
-  );
-  if (userRecords.length > 12) {
-    const oldestId = userRecords[0].id;
-    await pool.query("DELETE FROM water_consumption WHERE id = ?", [oldestId]);
-  }
-
   // Return newly inserted record
   const [newRow] = await pool.query(
     "SELECT * FROM water_consumption WHERE id = ?",
@@ -108,15 +119,44 @@ export const createConsumption = async (data) => {
   return newRow[0];
 };
 
-// UPDATE consumption
+
+
+/* -------------------------------
+   GET ALL LATEST CONSUMPTIONS PER USER (FOR DASHBOARD)
+--------------------------------*/
+export const getAllConsumptions = async () => {
+  const [rows] = await pool.query(`
+    SELECT w1.*
+    FROM water_consumption w1
+    INNER JOIN (
+      SELECT user_id, MAX(billing_date) AS latest_billing
+      FROM water_consumption
+      GROUP BY user_id
+    ) w2 ON w1.user_id = w2.user_id AND w1.billing_date = w2.latest_billing
+    ORDER BY w1.user_id
+  `);
+  return rows;
+};
+
+/* -------------------------------
+   GET CONSUMPTION BY ID
+--------------------------------*/
+export const getConsumptionById = async (id) => {
+  if (isNaN(id)) throw new Error("Invalid ID.");
+  const [rows] = await pool.query(
+    "SELECT * FROM water_consumption WHERE id = ?",
+    [id]
+  );
+  if (rows.length === 0) throw new Error("Consumption record not found.");
+  return rows[0];
+};
+
+/* -------------------------------
+   UPDATE CONSUMPTION
+--------------------------------*/
 export const updateConsumption = async (id, data) => {
   const { cubic_used, payment_1, payment_2 } = data;
   const old = await getConsumptionById(id);
-
-  const calculateBill = (cubic) => {
-    if (cubic <= 5) return 270;
-    return 270 + (cubic - 5) * 17;
-  };
 
   // Only update cubic_used if provided
   const newCubicUsed = cubic_used ?? old.cubic_used;
@@ -147,21 +187,15 @@ export const updateConsumption = async (id, data) => {
        payment_2 = ?,
        remaining_balance = ?
      WHERE id = ?`,
-    [
-      newCubicUsed,
-      current_bill,
-      total_bill,
-      newPayment1,
-      newPayment2,
-      remaining,
-      id,
-    ]
+    [newCubicUsed, current_bill, total_bill, newPayment1, newPayment2, remaining, id]
   );
 
   return await getConsumptionById(id);
 };
 
-// DELETE consumption
+/* -------------------------------
+   DELETE CONSUMPTION
+--------------------------------*/
 export const deleteConsumption = async (id) => {
   const [result] = await pool.query(
     "DELETE FROM water_consumption WHERE id = ?",
@@ -171,7 +205,9 @@ export const deleteConsumption = async (id) => {
   return true;
 };
 
-// GET consumptions by user
+/* -------------------------------
+   GET ALL CONSUMPTIONS FOR A USER
+--------------------------------*/
 export const getConsumptionsByUser = async (user_id) => {
   const [rows] = await pool.query(
     "SELECT * FROM water_consumption WHERE user_id = ? ORDER BY created_at DESC",

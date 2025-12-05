@@ -6,6 +6,7 @@ import {
   updateConsumption,
   removeConsumption,
   getConsumptionsByUser,
+  archiveOldConsumptions
 } from "../controllers/ConsumptionController.js";
 
 const router = express.Router();
@@ -27,5 +28,10 @@ router.delete("/delete/:id", removeConsumption);
 
 // Get all consumptions for a specific user
 router.get("/user/:userId", getConsumptionsByUser); 
+
+
+
+// Archive old records manually
+router.post("/archive-old", archiveOldConsumptions);
 
 export default router;

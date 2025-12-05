@@ -4,24 +4,23 @@ import pool from "../config/db.js";
    DeactNotice Model
 ---------------------------------*/
 
-// Fetch overdue users: remaining_balance > 0 AND due_date older than 2 months
-// Fetch users whose latest bill is unpaid and notice should be sent 3 days before due date
+// Fetch overdue users: remaining_balance > 0 AND 3 days before due_date
 export const getOverdueUsers = async () => {
   const [rows] = await pool.query(
     `SELECT user_id, name, remaining_balance, billing_date, due_date
      FROM water_consumption
      WHERE remaining_balance > 0
-       AND MONTH(billing_date) = MONTH(NOW())
-       AND YEAR(billing_date) = YEAR(NOW())
-       AND DAY(NOW()) >= DAY(due_date) - 3
+       AND CURDATE() >= DATE_SUB(due_date, INTERVAL 3 DAY)
      GROUP BY user_id`
   );
   return rows;
 };
 
+// Create deactivation notice with auto-message
+export const createDeactNotice = async ({ user_id, name, due_date, remaining_balance }) => {
+  const title = "Payment Overdue";
+  const message = `Dear ${name}, our records show that you still have an outstanding balance of ₱${remaining_balance}. Please settle your payment before ${new Date(due_date).toLocaleDateString()} to avoid service interruption.`;
 
-// Create deactivation notice
-export const createDeactNotice = async ({ user_id, title, message }) => {
   const [result] = await pool.query(
     `INSERT INTO notifications (user_id, title, message)
      VALUES (?, ?, ?)`,
@@ -64,4 +63,17 @@ export const hasDeactNotice = async (user_id) => {
     [user_id]
   );
   return rows[0].count > 0;
+};
+
+// Fetch latest user billing info
+export const getLatestUserBill = async (user_id) => {
+  const [rows] = await pool.query(
+    `SELECT name, due_date, remaining_balance
+     FROM water_consumption
+     WHERE user_id = ?
+     ORDER BY billing_date DESC
+     LIMIT 1`,
+    [user_id]
+  );
+  return rows[0] || null;
 };

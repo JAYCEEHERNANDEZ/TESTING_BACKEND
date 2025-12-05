@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import userRoutes from './routes/UserRoutes.js'
 import adminreaderRoutes from './routes/AdminReaderRoutes.js'
 import consumptionRoutes from './routes/ConsumptionRoutes.js';
-import billingRoutes from './routes/billingRoutes.js';
 import monthlyIncomeRoutes from "./routes/monthlyIncomeRoutes.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
@@ -13,6 +12,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 
 import DeactNoticeRoutes from "./routes/DeactNoticeRoutes.js";
 
+import receiptRoutes from "./routes/receiptRoutes.js";
 
 
 
@@ -41,7 +41,6 @@ app.use('/adminreader', adminreaderRoutes )
 
 app.use('/consumption', consumptionRoutes); 
 
-app.use('/billing', billingRoutes);
 
 app.use("/monthly-income", monthlyIncomeRoutes);
 
@@ -54,6 +53,8 @@ app.use("/notifications", notificationRoutes);
 app.use("/deact-notice", DeactNoticeRoutes);
 
 app.use("/uploads", express.static("uploads"));
+
+app.use("/receipt", receiptRoutes);
 
 
 

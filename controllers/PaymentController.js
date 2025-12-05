@@ -80,18 +80,25 @@ export const getUserPendingPayments = async (req, res) => {
 };
 
 // USER: Submit reference code only
-export const submitUserReference = async (req, res) => {
+export const submitReferenceCode = async (req, res) => {
   try {
-    const { user_id, bill_id, reference_code } = req.body;
-    if (!user_id || !bill_id || !reference_code)
+    const { user_id, reference_code } = req.body;
+
+    if (!user_id || !reference_code)
       return res.status(400).json({ success: false, message: "Missing required fields" });
 
-    const updated = await PaymentModel.submitReferenceCode({ user_id, bill_id, reference_code });
-    res.json({ success: true, data: updated, message: "Reference code submitted successfully" });
+    const updated = await PaymentModel.saveReferenceCode(user_id, reference_code);
+
+    res.json({
+      success: true,
+      message: "Reference code submitted successfully. Admin has been notified.",
+      data: updated,
+    });
   } catch (err) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // USER: Upload payment proof
 export const uploadPaymentProof = async (req, res) => {
