@@ -215,3 +215,11 @@ export const getConsumptionsByUser = async (user_id) => {
   );
   return rows;
 };
+
+export const getUserName = async (user_id) => {
+  const [rows] = await pool.query(
+    "SELECT name FROM water_consumption WHERE user_id = ? LIMIT 1",
+    [user_id]
+  );
+  return rows[0]?.name || "Unknown User";
+};

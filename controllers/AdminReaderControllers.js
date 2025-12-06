@@ -1,4 +1,6 @@
 import * as adminreader from "../models/AdminReadermodel.js";
+import bcrypt from 'bcryptjs';
+import { updateUserPassword } from "../models/AdminReadermodel.js";
 
 export const Getall = async (req, res) => {
   try {
@@ -40,3 +42,23 @@ export const userLogin = async (req, res) => {
         res.status(500).json({ success: false, message: e.message });
     }
 }
+
+export const resetPassword = async (req, res) => {
+  const userId = req.params.id;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ message: "Password cannot be empty" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await updateUserPassword(userId, hashedPassword);
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update password", error: err });
+  }
+};
+

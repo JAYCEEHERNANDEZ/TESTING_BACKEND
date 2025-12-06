@@ -91,4 +91,17 @@ export const getUser = async (id) => {
     return rows[0];
 };
 
+export const updateUserPassword = async (userId, hashedPassword) => {
+  try {
+    const [result] = await pool.query(
+      "UPDATE admin_reader SET password = ? WHERE id = ?",
+      [hashedPassword, userId]
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
 

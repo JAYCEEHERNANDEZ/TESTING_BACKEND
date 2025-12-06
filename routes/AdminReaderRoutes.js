@@ -9,4 +9,6 @@ adminreaderRoutes.post('/registeradminreader', adminreader.Register);
 
 adminreaderRoutes.post('/loginadminreader', adminreader.userLogin);
 
+adminreaderRoutes.post("/admin-reset-password/:id", adminreader.resetPassword);
+
 export default adminreaderRoutes;

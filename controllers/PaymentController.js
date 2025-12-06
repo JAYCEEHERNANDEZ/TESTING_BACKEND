@@ -1,5 +1,6 @@
 import * as PaymentModel from "../models/PaymentModel.js";
 import { createAdminNotification } from "../models/notificationModel.js";
+import { getUserName } from "../models/ConsumptionModel.js";
 
 // USER: Get payments for a user
 export const getPaymentsForUser = async (req, res) => {
@@ -80,6 +81,7 @@ export const getUserPendingPayments = async (req, res) => {
   }
 };
 
+
 // Upload payment proof
 export const uploadPaymentProof = async (req, res) => {
   try {
@@ -94,17 +96,22 @@ export const uploadPaymentProof = async (req, res) => {
     const proof_url = `/uploads/payments/${req.file.filename}`;
     const updated = await PaymentModel.submitPaymentProof({ user_id, bill_id, proof_url });
 
-    // Notify all admins
+    // Get name from water_consumption table
+    const userName = await getUserName(user_id);
+
+    // Notify all admins with name instead of ID
     await createAdminNotification({
       title: "New Payment Activity",
-      message: `User ID ${user_id} uploaded a payment proof.`
+      message: `${userName} uploaded a payment proof.`,
+      user_name: userName,
+      user_id: user_id // <--- add this
     });
 
     res.json({
       success: true,
       data: updated,
       message: "Payment proof uploaded successfully. Admin has been notified.",
-      user_id: user_id  // ✅ this is key
+      user_name: userName
     });
   } catch (err) {
     console.error("Error in uploadPaymentProof:", err);
@@ -122,17 +129,22 @@ export const submitReferenceCode = async (req, res) => {
 
     const updated = await PaymentModel.saveReferenceCode(user_id, reference_code);
 
-    // Notify all admins
+    // Get name from water_consumption table
+    const userName = await getUserName(user_id);
+
+    // Notify all admins with name instead of ID
     await createAdminNotification({
       title: "New Payment Activity",
-      message: `User ID ${user_id} submitted a reference code for payment.`,
-      user_id: user_id  // ✅ this is key
+      message: `${userName} submitted a reference code for payment.`,
+      user_name: userName,
+      user_id: user_id // <--- add this
     });
 
     res.json({
       success: true,
       message: "Reference code submitted successfully. Admin has been notified.",
       data: updated,
+      user_name: userName
     });
   } catch (err) {
     console.error("Error in submitReferenceCode:", err);
