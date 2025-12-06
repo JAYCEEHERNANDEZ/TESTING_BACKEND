@@ -83,9 +83,12 @@ export const createConsumption = async (data) => {
   const current_bill = calculateBill(cubic_used);
   const total_bill = current_bill;
 
-  const billing_date = today; // <-- use exact current date
+  const billing_date = today; // keep current date
+
+  // Due date: first day of next month
   const due_date = new Date(today);
-  due_date.setDate(due_date.getDate() + 30);
+  due_date.setMonth(due_date.getMonth() + 1);
+  due_date.setDate(1);
 
   // Insert new consumption record
   const [result] = await pool.query(
