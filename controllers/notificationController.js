@@ -79,8 +79,6 @@ export const readNotificationPerUser = async (req, res) => {
   }
 };
 
-
-
 // Fetch all admin notifications
 export const getAllAdminNotifications = async (req, res) => {
   try {

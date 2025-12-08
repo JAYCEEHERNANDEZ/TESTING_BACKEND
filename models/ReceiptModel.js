@@ -10,7 +10,7 @@ export const getConsumptionForReceipt = async (consumptionId) => {
   return rows[0];
 };
 
-// Optional: Save generated receipt
+//Save generated receipt
 export const saveReceipt = async ({ user_id, consumption_id, payment_amount, receipt_number }) => {
   const [result] = await pool.query(
     `INSERT INTO receipts (user_id, consumption_id, payment_amount, receipt_number)

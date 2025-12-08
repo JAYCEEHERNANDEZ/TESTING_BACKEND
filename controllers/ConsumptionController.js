@@ -1,8 +1,7 @@
 import * as consumptionModel from "../models/ConsumptionModel.js";
 
-/* -------------------------------
-   GET LATEST CONSUMPTIONS PER USER (DASHBOARD)
---------------------------------*/
+
+// GET LATEST CONSUMPTIONS PER USER (DASHBOARD)
 export const getAllConsumptions = async (req, res, next) => {
   try {
     const rows = await consumptionModel.getAllConsumptions(); // latest per user
@@ -12,9 +11,7 @@ export const getAllConsumptions = async (req, res, next) => {
   }
 };
 
-/* -------------------------------
-   GET A SPECIFIC CONSUMPTION BY ID
---------------------------------*/
+// GET A SPECIFIC CONSUMPTION BY ID
 export const getConsumption = async (req, res, next) => {
   try {
     const data = await consumptionModel.getConsumptionById(req.params.id);
@@ -24,9 +21,7 @@ export const getConsumption = async (req, res, next) => {
   }
 };
 
-/* -------------------------------
-   CREATE NEW CONSUMPTION RECORD
---------------------------------*/
+// CREATE NEW CONSUMPTION RECORD
 export const addConsumption = async (req, res, next) => {
   try {
     const data = await consumptionModel.createConsumption(req.body);
@@ -34,22 +29,6 @@ export const addConsumption = async (req, res, next) => {
       success: true,
       data,
       message: "Consumption added successfully",
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-/* -------------------------------
-   UPDATE EXISTING CONSUMPTION
---------------------------------*/
-export const updateConsumption = async (req, res, next) => {
-  try {
-    const data = await consumptionModel.updateConsumption(req.params.id, req.body);
-    res.json({
-      success: true,
-      data,
-      message: "Consumption updated successfully",
     });
   } catch (err) {
     next(err);
@@ -81,9 +60,7 @@ export const getConsumptionsByUser = async (req, res, next) => {
   }
 };
 
-/* -------------------------------
-   MANUALLY ARCHIVE OLD RECORDS (OLDER THAN 5 YEARS)
---------------------------------*/
+// MANUALLY ARCHIVE OLD RECORDS (OLDER THAN 5 YEARS)
 export const archiveOldConsumptions = async (req, res, next) => {
   try {
     const count = await consumptionModel.archiveOldConsumptions();
@@ -92,3 +69,17 @@ export const archiveOldConsumptions = async (req, res, next) => {
     next(err);
   }
 };
+
+// UPDATE EXISTING CONSUMPTION
+// export const updateConsumption = async (req, res, next) => {
+//   try {
+//     const data = await consumptionModel.updateConsumption(req.params.id, req.body);
+//     res.json({
+//       success: true,
+//       data,
+//       message: "Consumption updated successfully",
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };

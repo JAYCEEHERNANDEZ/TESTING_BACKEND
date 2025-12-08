@@ -1,8 +1,5 @@
 import pool from "../config/db.js";
 
-/* ------------------------------------------
-   NOTIFICATION MODEL
-------------------------------------------- */
 
 // Create a new notification (admin → specific user or broadcast)
 export const createNotification = async ({ user_id, title, message }) => {
@@ -31,7 +28,6 @@ export const getUserNotifications = async (user_id) => {
     return rows;
   }
 
-  // Normal user: fetch their notifications + broadcasts
   const [rows] = await pool.query(
     `SELECT * FROM notifications
      WHERE user_id = ? OR user_id IS NULL

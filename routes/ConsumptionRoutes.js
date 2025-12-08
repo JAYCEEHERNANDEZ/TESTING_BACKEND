@@ -1,37 +1,28 @@
 import express from "express";
-import {
-  getAllConsumptions,
-  getConsumption,
-  addConsumption,
-  updateConsumption,
-  removeConsumption,
-  getConsumptionsByUser,
-  archiveOldConsumptions
-} from "../controllers/ConsumptionController.js";
+import * as consumption from "../controllers/ConsumptionController.js";
 
-const router = express.Router();
+const consumptionroutes = express.Router();
 
 // Get latest consumption per user (dashboard)
-router.get("/all", getAllConsumptions);
+consumptionroutes.get("/all", consumption.getAllConsumptions);
 
 // Get a specific consumption by ID
-router.get("/:id", getConsumption);
+consumptionroutes.get("/:id", consumption.getConsumption);
 
 // Add new consumption record (new month)
-router.post("/add", addConsumption);
-
-// Update existing consumption (payments/cubic_used adjustments)
-router.patch("/update/:id", updateConsumption);
+consumptionroutes.post("/add", consumption.addConsumption);
 
 // Delete a consumption record
-router.delete("/delete/:id", removeConsumption);
+consumptionroutes.delete("/delete/:id", consumption.removeConsumption);
 
 // Get all consumptions for a specific user
-router.get("/user/:userId", getConsumptionsByUser); 
-
-
+consumptionroutes.get("/user/:userId", consumption.getConsumptionsByUser); 
 
 // Archive old records manually
-router.post("/archive-old", archiveOldConsumptions);
+consumptionroutes.post("/archive-old", consumption.archiveOldConsumptions);
 
-export default router;
+
+// Update existing consumption (payments/cubic_used adjustments)
+// router.patch("/update/:id", updateConsumption);
+
+export default consumptionroutes;

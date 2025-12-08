@@ -41,7 +41,7 @@ export const createUser = async (username, password, name) => {
     return newUser;
 };
 
-// Deactivate user (soft delete)
+// Deactivate user 
 export const deactivateUser = async (id) => {
     const [result] = await pool.query(
         "UPDATE users SET is_active = 0 WHERE id = ?",
@@ -50,7 +50,7 @@ export const deactivateUser = async (id) => {
     return result.affectedRows;
 };
 
-// Reactivate user (optional)
+// Reactivate user 
 export const reactivateUser = async (id) => {
     const [result] = await pool.query(
         "UPDATE users SET is_active = 1 WHERE id = ?",

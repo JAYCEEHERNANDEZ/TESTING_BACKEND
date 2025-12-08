@@ -5,10 +5,8 @@ import dotenv from "dotenv";
 import userRoutes from './routes/UserRoutes.js'
 import adminreaderRoutes from './routes/AdminReaderRoutes.js'
 import consumptionRoutes from './routes/ConsumptionRoutes.js';
-import monthlyIncomeRoutes from "./routes/monthlyIncomeRoutes.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
-
 
 import DeactNoticeRoutes from "./routes/DeactNoticeRoutes.js";
 
@@ -41,8 +39,6 @@ app.use('/adminreader', adminreaderRoutes )
 
 app.use('/consumption', consumptionRoutes); 
 
-
-app.use("/monthly-income", monthlyIncomeRoutes);
 
 app.use('/payment', paymentRoutes);
 

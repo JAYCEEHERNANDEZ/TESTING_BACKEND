@@ -7,14 +7,16 @@
     userRoutes.post('/register', user.Register);
     userRoutes.post('/login', user.userLogin);
     userRoutes.get("/:id", user.getUserById);
-    // userRoutes.delete('/delete/:id', user.removeUser);
-
-        // Deactivate account instead of delete
+   
+    // Deactivate account instead of delete
     userRoutes.put('/deactivate/:id', user.deactivateAccount);
 
     // Reactivate account (optional)
     userRoutes.put('/reactivate/:id', user.reactivateAccount);
 
+    // Reset password
     userRoutes.post("/reset-password/:id", user.resetPassword);
+
+     // userRoutes.delete('/delete/:id', user.removeUser);
 
     export default userRoutes;

@@ -1,53 +1,39 @@
 import express from "express";
-import {
-  getPaymentsForUser,
-  makePayment,
-  recordPayment,
-  adminMarkPayment,
-  getAllUsers,
-  getUserPendingPayments,
-  submitReferenceCode,
-  uploadPaymentProof,
-  getUserPaymentProofs,
-  getAllPaymentProofs
-} from "../controllers/PaymentController.js";
+import * as Payment from "../controllers/PaymentController.js";
 import upload from "../middleware/uploadPaymentProof.js";
 
-const router = express.Router();
+const paymentroutes = express.Router();
 
 /* -------------------- USER ROUTES -------------------- */
 // Get all payments for a user
-router.get("/user/:userId", getPaymentsForUser);
+paymentroutes.get("/user/:userId", Payment.getPaymentsForUser);
 
 // Make payment with reference code
-router.patch("/pay/:id", makePayment);
+paymentroutes.patch("/pay/:id", Payment.makePayment);
 
 // Submit reference code only
-router.post("/submit-reference", submitReferenceCode);
+paymentroutes.post("/submit-reference", Payment.submitReferenceCode);
 
 // Upload payment proof image
-router.post("/upload-proof", upload.single("proof"), uploadPaymentProof);
+paymentroutes.post("/upload-proof", upload.single("proof"), Payment.uploadPaymentProof);
 
 // Get payment proofs for a specific user
-router.get("/proofs/user/:userId", getUserPaymentProofs);
+paymentroutes.get("/proofs/user/:userId", Payment.getUserPaymentProofs);
 
 /* -------------------- ADMIN ROUTES -------------------- */
 // Get all users
-router.get("/all-users", getAllUsers);
-
-// Get pending payments for a user
-router.get("/user/:userId/pending", getUserPendingPayments);
+paymentroutes.get("/all-users", Payment.getAllUsers);
 
 // Record payment manually
-router.post("/record", recordPayment);
+paymentroutes.post("/record", Payment.recordPayment);
 
 // Mark payment status
-router.patch("/admin/pay/:id", adminMarkPayment);
+paymentroutes.patch("/admin/pay/:id", Payment.adminMarkPayment);
 
 // Get all payment proofs from all users
-router.get("/proofs/all", getAllPaymentProofs);
+paymentroutes.get("/proofs/all", Payment.getAllPaymentProofs);
 
+// // Get pending payments for a user
+// router.get("/user/:userId/pending", getUserPendingPayments);
 
-
-
-export default router;
+export default paymentroutes;

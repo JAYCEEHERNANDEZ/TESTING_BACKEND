@@ -14,10 +14,10 @@ export const generateReceipt = async (req, res) => {
     // Compute total paid
     const totalPaid = Number(consumption.payment_1 || 0) + Number(consumption.payment_2 || 0);
 
-    // Optional: Generate unique receipt number
+    // Generate unique receipt number
     const receiptNumber = `SWS-${consumption.user_id}-${Date.now()}`;
 
-    // Optional: Save receipt in DB
+    // Save receipt in DB
     await saveReceipt({
       user_id: consumption.user_id,
       consumption_id: consumption.id,

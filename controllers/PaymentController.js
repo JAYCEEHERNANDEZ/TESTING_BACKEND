@@ -70,16 +70,16 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// ADMIN: Get pending payments
-export const getUserPendingPayments = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const payments = await PaymentModel.getUserPendingPayments(userId);
-    res.json({ success: true, data: payments });
-  } catch (err) {
-    res.status(400).json({ success: false, message: err.message });
-  }
-};
+// // ADMIN: Get pending payments
+// export const getUserPendingPayments = async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const payments = await PaymentModel.getUserPendingPayments(userId);
+//     res.json({ success: true, data: payments });
+//   } catch (err) {
+//     res.status(400).json({ success: false, message: err.message });
+//   }
+// };
 
 
 // Upload payment proof
@@ -152,9 +152,7 @@ export const submitReferenceCode = async (req, res) => {
   }
 };
 
-
-
-// USER: Get payment proofs for a specific user
+// Get payment proofs for a specific user
 export const getUserPaymentProofs = async (req, res) => {
   try {
     const userId = req.params.userId;

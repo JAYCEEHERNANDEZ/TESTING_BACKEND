@@ -1,43 +1,34 @@
 import express from "express";
-import {
-  sendNotification,
-  fetchNotifications,
-  readNotification,
-  sendNotificationPerUser,
-  fetchUserNotificationsPerUser,
-  readNotificationPerUser,
-  getAllAdminNotifications,
-  markAdminNotificationAsRead,
-} from "../controllers/notificationController.js";
+import * as notification from "../controllers/NotificationController.js";
 
-const router = express.Router();
+const notificationroutes = express.Router();
 
 // Admin: fetch all notifications
-router.get("/all", fetchNotifications);  // admin view
+notificationroutes.get("/all", notification.fetchNotifications);  // admin view
 
 // User: fetch notifications for specific user
-router.get("/user/:user_id", fetchNotifications);
-
+notificationroutes.get("/user/:user_id", notification.fetchNotifications);
 
 // Admin sends notification
-router.post("/send", sendNotification);
+notificationroutes.post("/send", notification.sendNotification);
 
 // Mark notification as read
-router.put("/read/:id", readNotification);
+notificationroutes.put("/read/:id", notification.readNotification);
 
 
 // Send notification (admin)
-router.post("/send", sendNotificationPerUser);
+notificationroutes.post("/send", notification.sendNotificationPerUser);
 
 // Get notifications for a specific user
-router.get("/user/:user_id", fetchUserNotificationsPerUser);
+notificationroutes.get("/user/:user_id", notification.fetchUserNotificationsPerUser);
 
 // Mark notification as read
-router.put("/read/:id", readNotificationPerUser);
+notificationroutes.put("/read/:id", notification.readNotificationPerUser);
 
 // Fetch all admin notifications
-router.get("/admin/all", getAllAdminNotifications);
+notificationroutes.get("/admin/all", notification.getAllAdminNotifications);
 
 // Mark a notification as read
-router.put("/admin/read/:id", markAdminNotificationAsRead);
-export default router;
+notificationroutes.put("/admin/read/:id", notification.markAdminNotificationAsRead);
+
+export default notificationroutes;

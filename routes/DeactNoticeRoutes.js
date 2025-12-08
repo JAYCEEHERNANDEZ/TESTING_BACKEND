@@ -1,23 +1,18 @@
 import express from "express";
-import {
-  fetchOverdueUsers,
-  sendDeactNoticeController,
-  readNotice,
-  fetchNoticesForUser,
-} from "../controllers/DeactNoticeController.js";
+import * as notice from "../controllers/DeactNoticeController.js";
 
-const router = express.Router();
+const noticeroutes = express.Router();
 
 // Overdue users
-router.get("/overdue", fetchOverdueUsers);
+noticeroutes.get("/overdue", notice.fetchOverdueUsers);
 
 // Admin sends notice
-router.post("/send", sendDeactNoticeController);
+noticeroutes.post("/send", notice.sendDeactNoticeController);
 
 // Mark as read
-router.put("/read/:id", readNotice);
+noticeroutes.put("/read/:id", notice.readNotice);
 
 // User fetch notices
-router.get("/user/:user_id", fetchNoticesForUser);
+noticeroutes.get("/user/:user_id", notice.fetchNoticesForUser);
 
-export default router;
+export default noticeroutes;

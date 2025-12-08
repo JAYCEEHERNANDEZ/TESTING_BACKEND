@@ -1,9 +1,9 @@
 import express from "express";
-import { generateReceipt } from "../controllers/ReceiptController.js";
+import * as receipt from "../controllers/ReceiptController.js";
 
-const router = express.Router();
+const receiptroutes = express.Router();
 
 // GET /receipt/:consumption_id
-router.get("/:consumption_id", generateReceipt);
+receiptroutes.get("/:consumption_id", receipt.generateReceipt);
 
-export default router;
+export default receiptroutes;

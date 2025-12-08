@@ -1,9 +1,5 @@
 import pool from "../config/db.js";
 
-/* -------------------------------
-   DeactNotice Model
----------------------------------*/
-
 // Fetch overdue users: remaining_balance > 0 AND 3 days before due_date
 export const getOverdueUsers = async () => {
   const [rows] = await pool.query(
@@ -19,7 +15,7 @@ export const getOverdueUsers = async () => {
 // Create deactivation notice with auto-message
 export const createDeactNotice = async ({ user_id, name, due_date, remaining_balance }) => {
   const title = "Payment Overdue";
-  const message = `Dear ${name}, our records show that you still have an outstanding balance of ₱${remaining_balance}. Please settle your payment before ${new Date(due_date).toLocaleDateString()} to avoid service interruption.`;
+  const message = `Dear ${name}, our records show that you still have an unpaid balance of ₱${remaining_balance}. Please settle your payment before ${new Date(due_date).toLocaleDateString()} to avoid service interruption.`;
 
   const [result] = await pool.query(
     `INSERT INTO notifications (user_id, title, message)
