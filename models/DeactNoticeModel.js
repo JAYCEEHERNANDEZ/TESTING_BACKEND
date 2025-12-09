@@ -6,11 +6,22 @@ export const getOverdueUsers = async () => {
     `SELECT user_id, name, remaining_balance, billing_date, due_date
      FROM water_consumption
      WHERE remaining_balance > 0
-       AND CURDATE() >= DATE_SUB(due_date, INTERVAL 3 DAY)
+       AND (
+         -- Previous month (handles Jan correctly)
+         (MONTH(due_date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
+          AND YEAR(due_date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
+          AND CURDATE() >= DATE_SUB(due_date, INTERVAL 3 DAY))
+         OR
+         -- Current month
+         (MONTH(due_date) = MONTH(CURDATE())
+          AND YEAR(due_date) = YEAR(CURDATE())
+          AND CURDATE() >= DATE_SUB(due_date, INTERVAL 3 DAY))
+       )
      GROUP BY user_id`
   );
   return rows;
 };
+
 
 // Create deactivation notice with auto-message
 export const createDeactNotice = async ({ user_id, name, due_date, remaining_balance }) => {
@@ -18,10 +29,10 @@ export const createDeactNotice = async ({ user_id, name, due_date, remaining_bal
   const message = `Dear ${name}, our records show that you still have an unpaid balance of ₱${remaining_balance}. Please settle your payment before ${new Date(due_date).toLocaleDateString()} to avoid service interruption.`;
 
   const [result] = await pool.query(
-    `INSERT INTO notifications (user_id, title, message)
-     VALUES (?, ?, ?)`,
-    [user_id, title, message]
-  );
+  `INSERT INTO notifications (user_id, title, message, created_at)
+   VALUES (?, ?, ?, NOW())`,
+  [user_id, title, message]
+);
 
   return {
     id: result.insertId,
@@ -50,16 +61,20 @@ export const getUserNotices = async (user_id) => {
   return rows;
 };
 
-// Check if notice already exists
+// Check if a notice already exists for the current month
 export const hasDeactNotice = async (user_id) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) as count
      FROM notifications
-     WHERE user_id = ? AND title = 'Payment Overdue'`,
+     WHERE user_id = ?
+       AND title = 'Payment Overdue'
+       AND MONTH(created_at) = MONTH(CURDATE())
+       AND YEAR(created_at) = YEAR(CURDATE())`,
     [user_id]
   );
   return rows[0].count > 0;
 };
+
 
 // Fetch latest user billing info
 export const getLatestUserBill = async (user_id) => {
