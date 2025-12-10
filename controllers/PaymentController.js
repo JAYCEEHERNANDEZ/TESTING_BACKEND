@@ -100,11 +100,10 @@ export const uploadPaymentProof = async (req, res) => {
     const userName = await getUserName(user_id);
 
     // Notify all admins with name instead of ID
-    await createAdminNotification({
+        await createAdminNotification({
       title: "New Payment Activity",
       message: `${userName} uploaded a payment proof.`,
-      user_name: userName,
-      user_id: user_id // <--- add this
+      user_id: user_id
     });
 
     res.json({
@@ -132,13 +131,12 @@ export const submitReferenceCode = async (req, res) => {
     // Get name from water_consumption table
     const userName = await getUserName(user_id);
 
-    // Notify all admins with name instead of ID
-    await createAdminNotification({
-      title: "New Payment Activity",
-      message: `${userName} submitted a reference code for payment.`,
-      user_name: userName,
-      user_id: user_id // <--- add this
-    });
+          // Notify all admins with name instead of ID
+        await createAdminNotification({
+        title: "New Payment Activity",
+        message: `${userName} submitted a reference code for payment.`,
+        user_id: user_id
+      });
 
     res.json({
       success: true,

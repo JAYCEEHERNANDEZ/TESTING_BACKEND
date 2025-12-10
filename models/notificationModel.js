@@ -84,19 +84,59 @@ export const createAdminNotification = async ({ title, message, user_id }) => {
 
     if (!admins.length) return;
 
-    const promises = admins.map((admin) =>
-      pool.query(
-        `INSERT INTO admin_notifications (admin_id, user_id, title, message, is_read, created_at)
-         VALUES (?, ?, ?, ?, 0, NOW())`,
-        [admin.id, user_id || null, title, message]
-      )
+    // Check if a notification for this user + title already exists
+    const [existing] = await pool.query(
+      `SELECT id, message FROM admin_notifications 
+       WHERE user_id = ? AND title = ?`,
+      [user_id, title]
     );
 
-    await Promise.all(promises);
+    let notifPromises = [];
+
+    admins.forEach((admin) => {
+      if (existing.length > 0) {
+        // Parse existing messages JSON
+        let messagesArray;
+        try {
+          messagesArray = JSON.parse(existing[0].message).messages || [];
+        } catch {
+          messagesArray = [];
+        }
+
+        // Add new message if not already present
+        if (!messagesArray.includes(message)) {
+          messagesArray.push(message);
+        }
+
+        const updatedMessage = JSON.stringify({ messages: messagesArray });
+
+        notifPromises.push(
+          pool.query(
+            `UPDATE admin_notifications 
+             SET message = ?, created_at = NOW(), is_read = 0 
+             WHERE id = ? AND admin_id = ?`,
+            [updatedMessage, existing[0].id, admin.id]
+          )
+        );
+      } else {
+        // Create new notification as JSON
+        const newMessage = JSON.stringify({ messages: [message] });
+        notifPromises.push(
+          pool.query(
+            `INSERT INTO admin_notifications (admin_id, user_id, title, message, is_read, created_at)
+             VALUES (?, ?, ?, ?, 0, NOW())`,
+            [admin.id, user_id || null, title, newMessage]
+          )
+        );
+      }
+    });
+
+    await Promise.all(notifPromises);
   } catch (err) {
     console.error("Error creating admin notification:", err);
   }
 };
+
 
 
 export const fetchAllAdminNotifications = async () => {
