@@ -4,7 +4,9 @@ import {
   markNoticeAsRead,
   getUserNotices,
   hasDeactNotice,
-  getLatestUserBill
+  getLatestUserBill,
+  getUserBillByDate,
+   hasDeactNoticeForBilling
 } from "../models/DeactNoticeModel.js";
 
 // Admin — Fetch overdue users
@@ -26,26 +28,32 @@ export const fetchOverdueUsers = async (req, res) => {
   }
 };
 
-// Admin — Send Deactivation Notice
+
+// Admin — Send Deactivation Notice for a specific billing record
 export const sendDeactNoticeController = async (req, res) => {
   try {
-    const { user_id } = req.body;
+    const { user_id, billing_date } = req.body;
 
-    const alreadySent = await hasDeactNotice(user_id);
+    if (!user_id || !billing_date) {
+      return res.status(400).json({ success: false, error: "Missing user_id or billing_date" });
+    }
+
+    // Check if notice has already been sent for this billing record
+    const alreadySent = await hasDeactNoticeForBilling(user_id, billing_date);
     if (alreadySent) {
       return res.status(400).json({
         success: false,
-        error: "Deactivation notice already sent to this user.",
+        error: "Deactivation notice already sent for this billing record.",
       });
     }
 
-    // Fetch latest user info
-    const userBill = await getLatestUserBill(user_id);
-    if (!userBill) {
-      return res.status(404).json({ success: false, error: "User not found or no billing record." });
+    // Fetch the billing record for the exact billing_date
+    const bill = await getUserBillByDate(user_id, billing_date);
+    if (!bill) {
+      return res.status(404).json({ success: false, error: "Billing record not found." });
     }
 
-    const { name, due_date, remaining_balance } = userBill;
+    const { name, due_date, remaining_balance } = bill;
 
     // Create the deactivation notice
     const notice = await createDeactNotice({ user_id, name, due_date, remaining_balance });
@@ -60,6 +68,7 @@ export const sendDeactNoticeController = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 
 // User — Mark Notification as Read
 export const readNotice = async (req, res) => {
