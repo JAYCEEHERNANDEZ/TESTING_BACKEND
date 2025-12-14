@@ -7,12 +7,8 @@ import adminreaderRoutes from './routes/AdminReaderRoutes.js'
 import consumptionRoutes from './routes/ConsumptionRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
-
 import DeactNoticeRoutes from "./routes/DeactNoticeRoutes.js";
-
 import receiptRoutes from "./routes/receiptRoutes.js";
-
-
 
 const app = express();
 dotenv.config();
@@ -39,12 +35,9 @@ app.use('/adminreader', adminreaderRoutes )
 
 app.use('/consumption', consumptionRoutes); 
 
-
 app.use('/payment', paymentRoutes);
 
 app.use("/notifications", notificationRoutes);
-
-
 
 app.use("/deact-notice", DeactNoticeRoutes);
 

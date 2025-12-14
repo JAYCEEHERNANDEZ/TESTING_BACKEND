@@ -35,21 +35,7 @@ export const addConsumption = async (req, res, next) => {
   }
 };
 
-/* -------------------------------
-   DELETE A CONSUMPTION RECORD
---------------------------------*/
-export const removeConsumption = async (req, res, next) => {
-  try {
-    await consumptionModel.deleteConsumption(req.params.id);
-    res.json({ success: true, message: "Consumption record deleted successfully" });
-  } catch (err) {
-    next(err);
-  }
-};
-
-/* -------------------------------
-   GET ALL CONSUMPTIONS FOR A USER
---------------------------------*/
+  // GET ALL CONSUMPTIONS FOR A USER
 export const getConsumptionsByUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
@@ -70,16 +56,3 @@ export const archiveOldConsumptions = async (req, res, next) => {
   }
 };
 
-// UPDATE EXISTING CONSUMPTION
-// export const updateConsumption = async (req, res, next) => {
-//   try {
-//     const data = await consumptionModel.updateConsumption(req.params.id, req.body);
-//     res.json({
-//       success: true,
-//       data,
-//       message: "Consumption updated successfully",
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };

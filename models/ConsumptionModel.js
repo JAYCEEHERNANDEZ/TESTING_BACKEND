@@ -6,7 +6,6 @@ const calculateBill = (cubicUsed) => {
   return 270 + (cubicUsed - 5) * 17;
 };
 
-
 //ARCHIVE OLD RECORDS (OLDER THAN 5 YEARS)
 export const archiveOldConsumptions = async () => {
   await pool.query(
@@ -154,55 +153,3 @@ export const getUserName = async (user_id) => {
   );
   return rows[0]?.name || "Unknown User";
 };
-
-// /* -------------------------------
-//    UPDATE CONSUMPTION
-// --------------------------------*/
-// export const updateConsumption = async (id, data) => {
-//   const { cubic_used, payment_1, payment_2 } = data;
-//   const old = await getConsumptionById(id);
-
-//   // Only update cubic_used if provided
-//   const newCubicUsed = cubic_used ?? old.cubic_used;
-//   const current_bill = calculateBill(newCubicUsed);
-//   const total_bill = current_bill;
-
-//   // Handle payments
-//   let newPayment1 = old.payment_1;
-//   let newPayment2 = old.payment_2;
-//   let remaining = total_bill - newPayment1 - newPayment2;
-
-//   if (payment_1 !== undefined && old.payment_2 === 0) {
-//     newPayment1 = payment_1;
-//     remaining = total_bill - newPayment1 - newPayment2;
-//   }
-
-//   if (payment_2 !== undefined) {
-//     newPayment2 = payment_2;
-//     remaining = total_bill - newPayment1 - newPayment2;
-//   }
-
-//   await pool.query(
-//     `UPDATE water_consumption SET
-//        cubic_used = ?,
-//        current_bill = ?,
-//        total_bill = ?,
-//        payment_1 = ?,
-//        payment_2 = ?,
-//        remaining_balance = ?
-//      WHERE id = ?`,
-//     [newCubicUsed, current_bill, total_bill, newPayment1, newPayment2, remaining, id]
-//   );
-
-//   return await getConsumptionById(id);
-// };
-
-// // DELETE CONSUMPTION
-// export const deleteConsumption = async (id) => {
-//   const [result] = await pool.query(
-//     "DELETE FROM water_consumption WHERE id = ?",
-//     [id]
-//   );
-//   if (result.affectedRows === 0) throw new Error("Record not found.");
-//   return true;
-// };

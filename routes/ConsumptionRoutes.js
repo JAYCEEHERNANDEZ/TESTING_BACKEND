@@ -12,17 +12,11 @@ consumptionroutes.get("/:id", consumption.getConsumption);
 // Add new consumption record (new month)
 consumptionroutes.post("/add", consumption.addConsumption);
 
-// Delete a consumption record
-consumptionroutes.delete("/delete/:id", consumption.removeConsumption);
-
 // Get all consumptions for a specific user
 consumptionroutes.get("/user/:userId", consumption.getConsumptionsByUser); 
 
 // Archive old records manually
 consumptionroutes.post("/archive-old", consumption.archiveOldConsumptions);
 
-
-// Update existing consumption (payments/cubic_used adjustments)
-// router.patch("/update/:id", updateConsumption);
 
 export default consumptionroutes;

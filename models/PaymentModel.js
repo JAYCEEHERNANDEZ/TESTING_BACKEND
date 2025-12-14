@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 
-// Helper: format JS Date to MySQL DATETIME
+// Helper: format 
 const formatDate = (date) => {
   return date.toISOString().slice(0, 19).replace("T", " ");
 };
@@ -124,59 +124,6 @@ export const saveReferenceCode = async (user_id, reference_code) => {
   return { user_id, reference_code };
 };
 
-// Get unpaid/partial payments
-export const getUserPendingPayments = async (user_id) => {
-  const [rows] = await pool.query(
-    `SELECT * FROM water_consumption WHERE user_id = ? AND remaining_balance > 0 ORDER BY billing_date ASC`,
-    [user_id]
-  );
-  return rows;
-};
-
-// Mark payment status
-export const markPaymentStatus = async (id, status) => {
-  const record = await getPaymentById(id);
-
-  let payment1 = Number(record.payment_1) || 0;
-  let payment2 = Number(record.payment_2) || 0;
-  let remaining = Number(record.remaining_balance) || record.current_bill;
-
-  switch (status) {
-    case "Paid":
-      payment1 = record.current_bill;
-      payment2 = 0;
-      remaining = 0;
-      break;
-    case "Partial":
-      payment1 = record.current_bill - remaining;
-      payment2 = 0;
-      break;
-    case "Unpaid":
-      payment1 = 0;
-      payment2 = 0;
-      remaining = record.current_bill;
-      break;
-    default:
-      throw new Error("Invalid status");
-  }
-
-  const payment_total = payment1 + payment2;
-  const now = formatDate(new Date());
-  const payment1Date = payment1 > 0 ? record.payment_1_date || now : null;
-  const payment2Date = payment2 > 0 ? record.payment_2_date || now : null;
-
-  await pool.query(
-    `UPDATE water_consumption SET
-      payment_1 = ?, payment_1_date = ?,
-      payment_2 = ?, payment_2_date = ?,
-      payment_total = ?, remaining_balance = ?, status = ?
-     WHERE id = ?`,
-    [payment1, payment1Date, payment2, payment2Date, payment_total, remaining, status, id]
-  );
-
-  return await getPaymentById(id);
-};
-
 // Update proof URL only
 export const submitPaymentProof = async ({ user_id, bill_id, proof_url }) => {
   const now = formatDate(new Date());
@@ -202,18 +149,6 @@ export const getUserPaymentProofs = async (user_id) => {
      WHERE wc.user_id = ? AND wc.proof_url IS NOT NULL
      ORDER BY wc.billing_date DESC`,
     [user_id]
-  );
-  return rows;
-};
-
-// Get all payment proofs (admin view)
-export const getAllPaymentProofs = async () => {
-  const [rows] = await pool.query(
-    `SELECT wc.*, u.name as user_name 
-     FROM water_consumption wc
-     JOIN users u ON wc.user_id = u.id
-     WHERE wc.proof_url IS NOT NULL
-     ORDER BY wc.billing_date DESC`
   );
   return rows;
 };

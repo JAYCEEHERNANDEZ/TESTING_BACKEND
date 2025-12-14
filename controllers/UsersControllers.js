@@ -103,28 +103,3 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
-// export const removeUser= async (req, res) => {
-//     const {id} = req.params;
-//     try {
-//         const deletedId = await userModel.removeUser(id);
-//         res.status(200).json({success: true, message: deletedId});
-//     } catch (e) {
-//         console.log(e);
-//         res.status(500).json({success: false, message: "Internal Server Error"})
-//     }
-// }
-
-// export const updateuser = async (req, res) => {
-//     const {username, password} = req.body;
-//     const {id} = req.params
-//     try {
-//         const updatedId = await userModel.updateuser(username, password, id);
-//         res.status(200).json({success: true, message: id});
-// }catch (e) {
-//         console.log(e);
-//         res.status(500).json({success: false, message: "Internal Server Error"})
-//     }
-// }
-
-

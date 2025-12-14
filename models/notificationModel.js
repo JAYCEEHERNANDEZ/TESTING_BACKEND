@@ -1,24 +1,6 @@
 import pool from "../config/db.js";
 
-
-// Create a new notification
-export const createNotification = async ({ user_id, title, message }) => {
-  const [result] = await pool.query(
-    `INSERT INTO notifications (user_id, title, message)
-     VALUES (?, ?, ?)`,
-    [user_id || null, title, message]
-  );
-
-  return {
-    id: result.insertId,
-    user_id: user_id || null,
-    title,
-    message,
-    created_at: new Date(),
-  };
-};
-
-// Get notifications for a specific user (or broadcast)
+// Get notifications
 export const getUserNotifications = async (user_id) => {
   if (user_id === "all") {
     // Admin: fetch all notifications
@@ -36,6 +18,23 @@ export const getUserNotifications = async (user_id) => {
   );
 
   return rows;
+};
+
+// Create a new notification
+export const createNotification = async ({ user_id, title, message }) => {
+  const [result] = await pool.query(
+    `INSERT INTO notifications (user_id, title, message)
+     VALUES (?, ?, ?)`,
+    [user_id || null, title, message]
+  );
+
+  return {
+    id: result.insertId,
+    user_id: user_id || null,
+    title,
+    message,
+    created_at: new Date(),
+  };
 };
 
 // Mark a notification as read

@@ -5,7 +5,7 @@ import {
   getUserNotices,
   hasDeactNotice,
   getUserBillByDate,
-   hasDeactNoticeForBilling
+  hasDeactNoticeForBilling
 } from "../models/DeactNoticeModel.js";
 
 // Admin — Fetch overdue users
