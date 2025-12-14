@@ -1,8 +1,6 @@
 import pool from "../config/db.js";
 
-// --------------------------
 // Fetch overdue users
-// --------------------------
 export const getOverdueUsers = async () => {
   const [rows] = await pool.query(
     `SELECT 
@@ -19,9 +17,7 @@ export const getOverdueUsers = async () => {
   return rows;
 };
 
-// --------------------------
 // Fetch specific billing record by billing_date
-// --------------------------
 export const getUserBillByDate = async (user_id, billing_date) => {
   const [rows] = await pool.query(
     `SELECT name, due_date, remaining_balance
@@ -33,9 +29,7 @@ export const getUserBillByDate = async (user_id, billing_date) => {
   return rows[0] || null;
 };
 
-// --------------------------
 // Check if a notice was already sent for a specific billing record
-// --------------------------
 export const hasDeactNoticeForBilling = async (user_id, billing_date) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) as count
@@ -48,9 +42,7 @@ export const hasDeactNoticeForBilling = async (user_id, billing_date) => {
   return rows[0].count > 0;
 };
 
-// --------------------------
 // Create a deactivation notice
-// --------------------------
 export const createDeactNotice = async ({ user_id, name, due_date, remaining_balance }) => {
   const title = "Payment Overdue";
   const message = `Dear ${name}, our records show that you still have an unpaid balance of ₱${remaining_balance}. Please settle your payment for ${new Date(due_date).toLocaleDateString()} to avoid service interruption.`;
@@ -70,17 +62,15 @@ export const createDeactNotice = async ({ user_id, name, due_date, remaining_bal
   };
 };
 
-// --------------------------
+
 // Mark notice as read
-// --------------------------
 export const markNoticeAsRead = async (id) => {
   await pool.query(`UPDATE notifications SET is_read = 1 WHERE id = ?`, [id]);
   return true;
 };
 
-// --------------------------
+
 // Get all notifications for a user
-// --------------------------
 export const getUserNotices = async (user_id) => {
   const [rows] = await pool.query(
     `SELECT *
@@ -92,9 +82,8 @@ export const getUserNotices = async (user_id) => {
   return rows;
 };
 
-// --------------------------
+
 // Check if a notice exists in the current month
-// --------------------------
 export const hasDeactNotice = async (user_id) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) as count
@@ -108,9 +97,7 @@ export const hasDeactNotice = async (user_id) => {
   return rows[0].count > 0;
 };
 
-// --------------------------
 // Fetch the latest billing record
-// --------------------------
 export const getLatestUserBill = async (user_id) => {
   const [rows] = await pool.query(
     `SELECT name, due_date, remaining_balance

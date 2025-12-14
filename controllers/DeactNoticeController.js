@@ -4,7 +4,6 @@ import {
   markNoticeAsRead,
   getUserNotices,
   hasDeactNotice,
-  getLatestUserBill,
   getUserBillByDate,
    hasDeactNoticeForBilling
 } from "../models/DeactNoticeModel.js";

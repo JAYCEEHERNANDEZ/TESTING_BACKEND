@@ -1,11 +1,11 @@
-import { getConsumptionForReceipt, saveReceipt } from "../models/ReceiptModel.js";
+import * as receiptModel from "../models/ReceiptModel.js";
 
 // Generate receipt for a confirmed payment
 export const generateReceipt = async (req, res) => {
   try {
     const { consumption_id } = req.params;
 
-    const consumption = await getConsumptionForReceipt(consumption_id);
+    const consumption = await receiptModel.getConsumptionForReceipt(consumption_id);
 
     if (!consumption.payment_1 && !consumption.payment_2) {
       return res.status(400).json({ message: "Payment not confirmed yet." });
@@ -18,7 +18,7 @@ export const generateReceipt = async (req, res) => {
     const receiptNumber = `SWS-${consumption.user_id}-${Date.now()}`;
 
     // Save receipt in DB
-    await saveReceipt({
+    await receiptModel.saveReceipt({
       user_id: consumption.user_id,
       consumption_id: consumption.id,
       payment_amount: totalPaid,

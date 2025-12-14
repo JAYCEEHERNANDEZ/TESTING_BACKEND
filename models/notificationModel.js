@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 
 
-// Create a new notification (admin → specific user or broadcast)
+// Create a new notification
 export const createNotification = async ({ user_id, title, message }) => {
   const [result] = await pool.query(
     `INSERT INTO notifications (user_id, title, message)
@@ -136,8 +136,6 @@ export const createAdminNotification = async ({ title, message, user_id }) => {
     console.error("Error creating admin notification:", err);
   }
 };
-
-
 
 export const fetchAllAdminNotifications = async () => {
   const [rows] = await pool.query(
